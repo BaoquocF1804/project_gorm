@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const menuString string = "1. Press 1 to add a nhan vien\n2. Press 2 to delete a nhan vien\n3. Press 3 to add hoa don\n4.Press 0 to quit\n"
+const menuString string = "1. Press 1 to add a nhan vien\n2. Press 2 to delete a nhan vien\n3. Press 3 to add hoa don\n4. Press 4 to add san pham\n5.Press 0 to quit\n"
 
 func Menu(db *gorm.DB) {
 	for true {
@@ -24,15 +24,12 @@ func Menu(db *gorm.DB) {
 		case "1":
 			addNhanvien(db)
 			break
-		//case "2":
-		//	addStudent(db)
-		//	break
 		case "3":
 			addHoaDon(db)
 			break
-		//case "4":
-		//	lendBook(db)
-		//	break
+		case "4":
+			addSanPham(db)
+			break
 		//case "5":
 		//	returnBook(db)
 		//	break
@@ -60,78 +57,106 @@ func Menu(db *gorm.DB) {
 	}
 }
 
-// add a record to students table
 func addNhanvien(db *gorm.DB) {
 	s := model.Nhanvien{}
+
 	fmt.Println("Ma NV: ")
 	s.MANV, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.MANV = strings.TrimSuffix(s.MANV, "\n")
+
 	fmt.Println("Ho va ten: ")
 	s.HOTEN, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.HOTEN = strings.TrimSuffix(s.HOTEN, "\n")
+
 	fmt.Println("SDT: ")
 	s.SODT, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.SODT = strings.TrimSuffix(s.SODT, "\n")
+
 	fmt.Println("Ngay vao lam: ")
 	s.NGVL = time.Now()
-	fmt.Println(s)
+
 	model.AddNhanvien(db, s)
 	return
 }
 
 func deleteNV(db *gorm.DB) {
 	var input string
-
 	fmt.Println("Ma NV: ")
-
 	fmt.Scanln(&input)
 	model.DeleteNV(db, input)
 }
 
-// add a record to hoa don table
 func addHoaDon(db *gorm.DB) {
-	// Step 1: Create a new Hoadon instance
+	s := model.Hoadon{}
+
 	fmt.Println("MaKH: ")
-	makh, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-	makh = strings.TrimSuffix(makh, "\n")
+	s.MAKH, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.MAKH = strings.TrimSuffix(s.MAKH, "\n")
+
 	fmt.Println("MaNV: ")
-	manv, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-	manv = strings.TrimSuffix(manv, "\n")
+	s.MANV, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.MANV = strings.TrimSuffix(s.MANV, "\n")
+
 	fmt.Println("Tri gia: ")
 	reader1 := bufio.NewReader(os.Stdin)
 	var trigia float64
 	fmt.Fscanf(reader1, "%f", &trigia)
+	s.NGHD = time.Now()
+	s.TRIGIA = int(trigia)
 
-	//trigia := float64(60000)
-	s := model.Hoadon{
-		NGHD:   time.Now(),
-		MAKH:   makh,
-		MANV:   manv,
-		TRIGIA: int(trigia),
-	}
 	fmt.Println(s)
-
-	// Step 2: Retrieve the Nhanvien and Khachang from the database
-
+	//  Retrieve the Nhanvien and Khachang from the database
 	var nv model.Nhanvien
-	if err := db.Where("MANV = ?", manv).Find(&nv).Error; err != nil {
+	if err := db.Where("MANV = ?", s.MAKH).Find(&nv).Error; err != nil {
+		return
+	}
+	var kh model.Khachhang
+	if err := db.Where("MAKH = ?", s.MAKH).Find(&kh).Error; err != nil {
 		return
 	}
 
-	var kh model.Khachhang
-	if err := db.Where("MAKH = ?", makh).Find(&kh).Error; err != nil {
-		return
-	}
 	// Step 3: Append the new CreditCard to the User's CreditCards slice
 	nv.Hoadon = append(nv.Hoadon, s)
 	kh.Hoadon = append(kh.Hoadon, s)
-
 	model.AddHoaDon(db, s)
 
-	// Step 3: Cap nhat doanh so
+	// Step 4: Cap nhat doanh so
 	var doanhSo model.Khachhang
-	err := db.Where("MAKH = ?", makh).Find(&doanhSo).Error
+	err := db.Where("MAKH = ?", s.MAKH).Find(&doanhSo).Error
 	if err != nil {
 		return
 	}
 	doanhSoCu := doanhSo.DOANHSO
 	doanhSoMoi := doanhSoCu + trigia
-	db.Model(&model.Khachhang{}).Where("MAKH = ?", makh).Update("DOANHSO", doanhSoMoi)
+	db.Model(&model.Khachhang{}).Where("MAKH = ?", s.MAKH).Update("DOANHSO", doanhSoMoi)
+}
+
+// add a record to students table
+func addSanPham(db *gorm.DB) {
+	s := model.Sanpham{}
+
+	fmt.Println("Ma MSP: ")
+	s.MASP, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.MASP = strings.TrimSuffix(s.MASP, "\n")
+
+	fmt.Println("Ten san pham: ")
+	s.TENSP, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.TENSP = strings.TrimSuffix(s.TENSP, "\n")
+
+	fmt.Println("DVT: ")
+	s.DVT, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.DVT = strings.TrimSuffix(s.DVT, "\n")
+
+	fmt.Println("Nuoc SX: ")
+	s.NUOCSX, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+	s.NUOCSX = strings.TrimSuffix(s.NUOCSX, "\n")
+
+	fmt.Println("Gia: ")
+	reader1 := bufio.NewReader(os.Stdin)
+	var trigia float64
+	fmt.Fscanf(reader1, "%f", &trigia)
+	s.GIA = trigia
+
+	model.AddSP(db, s)
+	return
 }
