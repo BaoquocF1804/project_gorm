@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const menuString string = "1. Press 1 to add a nhan vien\n2. Press 2 to delete a nhan vien\n3. Press 3 to add hoa don\n4. Press 4 to add san pham\n5.Press 0 to quit\n"
+const menuString string = "1. Press 1 to add a nhan vien\n2. Press 2 to delete a nhan vien\n3. Press 3 to add hoa don\n4. Press 4 to add san pham\n5. Press 4 to change gia san pham\n6.Press 0 to quit\n"
 
 func Menu(db *gorm.DB) {
 	for true {
@@ -30,9 +30,9 @@ func Menu(db *gorm.DB) {
 		case "4":
 			addSanPham(db)
 			break
-		//case "5":
-		//	returnBook(db)
-		//	break
+		case "5":
+			updateSP(db)
+			break
 		//case "6":
 		//	getBookByName(db)
 		//	break
@@ -158,5 +158,20 @@ func addSanPham(db *gorm.DB) {
 	s.GIA = trigia
 
 	model.AddSP(db, s)
+	return
+}
+
+func updateSP(db *gorm.DB) {
+
+	fmt.Println("MSP: ")
+	masp, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	masp = strings.TrimSuffix(masp, "\n")
+
+	fmt.Println("Sua Gia: ")
+	reader1 := bufio.NewReader(os.Stdin)
+	var trigia float64
+	fmt.Fscanf(reader1, "%f", &trigia)
+
+	db.Model(&model.Sanpham{}).Where("MASP = ?", masp).Update("GIA", trigia)
 	return
 }
