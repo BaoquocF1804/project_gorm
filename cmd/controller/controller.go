@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"project_demo/cmd/model"
+	"strings"
 	"time"
 )
 
@@ -87,46 +88,50 @@ func deleteNV(db *gorm.DB) {
 // add a record to hoa don table
 func addHoaDon(db *gorm.DB) {
 	// Step 1: Create a new Hoadon instance
-	fmt.Println("SoHD: ")
-	reader := bufio.NewReader(os.Stdin)
-	var num int
-	_, err := fmt.Fscanf(reader, "%d", &num)
-	if err != nil {
-		fmt.Println("Error reading integer:", err)
-		return
-	}
-
 	fmt.Println("MaKH: ")
 	makh, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	makh = strings.TrimSuffix(makh, "\n")
 	fmt.Println("MaNV: ")
 	manv, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-
+	manv = strings.TrimSuffix(manv, "\n")
 	fmt.Println("Tri gia: ")
 	reader1 := bufio.NewReader(os.Stdin)
-	var trigia int
-	_, err = fmt.Fscanf(reader1, "%d", &trigia)
-	if err != nil {
-		fmt.Println("Error reading integer:", err)
-		return
-	}
+	var trigia float64
+	fmt.Fscanf(reader1, "%f", &trigia)
 
+	//trigia := float64(60000)
 	s := model.Hoadon{
-		SOHD:   num,
 		NGHD:   time.Now(),
 		MAKH:   makh,
 		MANV:   manv,
-		TRIGIA: trigia,
+		TRIGIA: int(trigia),
 	}
 	fmt.Println(s)
 
-	// Step 2: Retrieve the Nhanvien from the database
+	// Step 2: Retrieve the Nhanvien and Khachang from the database
+
 	var nv model.Nhanvien
-	if err := db.Where("member_number = ?", manv).First(&nv).Error; err != nil {
+	if err := db.Where("MANV = ?", manv).Find(&nv).Error; err != nil {
 		return
 	}
 
+	var kh model.Khachhang
+	if err := db.Where("MAKH = ?", makh).Find(&kh).Error; err != nil {
+		return
+	}
 	// Step 3: Append the new CreditCard to the User's CreditCards slice
 	nv.Hoadon = append(nv.Hoadon, s)
+	kh.Hoadon = append(kh.Hoadon, s)
+
 	model.AddHoaDon(db, s)
-	return
+
+	// Step 3: Cap nhat doanh so
+	var doanhSo model.Khachhang
+	err := db.Where("MAKH = ?", makh).Find(&doanhSo).Error
+	if err != nil {
+		return
+	}
+	doanhSoCu := doanhSo.DOANHSO
+	doanhSoMoi := doanhSoCu + trigia
+	db.Model(&model.Khachhang{}).Where("MAKH = ?", makh).Update("DOANHSO", doanhSoMoi)
 }

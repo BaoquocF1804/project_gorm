@@ -12,7 +12,7 @@ type Khachhang struct {
 	DCHI    string
 	SODT    string
 	NGSINH  time.Time
-	DOANHSO int64
+	DOANHSO float64
 	NGDK    time.Time
 	Hoadon  []Hoadon `gorm:"foreignKey:MAKH;"`
 }

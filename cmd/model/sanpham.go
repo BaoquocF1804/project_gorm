@@ -11,5 +11,5 @@ type Sanpham struct {
 	DVT   string
 	GIA   int64
 	NUOC  string
-	CTHD  []CTHD `gorm:"foreignKey:MASP;references:MASP"`
+	CTHD  []CTHD `gorm:"foreignKey:MASP;"`
 }

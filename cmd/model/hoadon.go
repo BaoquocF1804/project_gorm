@@ -7,7 +7,7 @@ import (
 
 type Hoadon struct {
 	gorm.Model
-	SOHD   int `gorm:"primarykey"`
+	SOHD   int `gorm:"primaryKey;autoIncrement"`
 	NGHD   time.Time
 	MAKH   string
 	MANV   string
