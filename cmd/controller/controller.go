@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const menuString string = "1. Press 1 to add a nhan vien\n2. Press 2 to delete a nhan vien\n3. Press 3 to add hoa don\n4. Press 4 to add san pham\n5. Press 4 to change gia san pham\n6.Press 0 to quit\n"
+const menuString string = "1. Press 1 to add a nhan vien\n2. Press 2 to delete a nhan vien\n3. Press 3 to add hoa don\n4. Press 4 to add san pham\n5. Press 5 to change gia san pham\n5. Press 6 to lay hoa don theo ten khach hang\n0.Press 0 to quit\n"
 
 func Menu(db *gorm.DB) {
 	for true {
@@ -33,9 +33,9 @@ func Menu(db *gorm.DB) {
 		case "5":
 			updateSP(db)
 			break
-		//case "6":
-		//	getBookByName(db)
-		//	break
+		case "6":
+			findHD_KH(db)
+			break
 		//case "7":
 		//	getBookByID(db)
 		//	break
@@ -174,4 +174,20 @@ func updateSP(db *gorm.DB) {
 
 	db.Model(&model.Sanpham{}).Where("MASP = ?", masp).Update("GIA", trigia)
 	return
+}
+
+func findHD_KH(db *gorm.DB) {
+	fmt.Println("Nhap ten KH: ")
+	ten, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	ten = strings.TrimSuffix(ten, "\n")
+
+	var khach_hang model.Khachhang
+	db.Where("HOTEN = ?", ten).Find(&khach_hang)
+
+	var so_hoa_don []model.Hoadon
+	db.Where("MAKH", khach_hang.MAKH).Find(&so_hoa_don)
+
+	for _, value := range so_hoa_don {
+		fmt.Println(value.SOHD)
+	}
 }
